@@ -1,15 +1,28 @@
-# ---> Hugo
-# Generated files by hugo
+# Hugo build output
 /public/
-/resources/_gen/
-/assets/jsconfig.json
-hugo_stats.json
+/resources/
 
-# Executable may be added to repository
+# Hugo cache and lock files
+.hugo_build.lock
+.hugo_build.cache/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*.bak
+
+# Hugo executable binaries (if manually downloaded)
 hugo.exe
 hugo.darwin
 hugo.linux
-
-# Temporary lock file while building
-/.hugo_build.lock
-

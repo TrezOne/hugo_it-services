@@ -1,24 +1,41 @@
-name: Hugo site deploy & publish
+name: Deploy Hugo Site
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  deploy-website:
+  deploy-hugo-site:
+    name: Build and Deploy to Server
     runs-on: ubuntu-latest
     steps:
-      - name: Do a git checkout including submodules
+      - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
         with:
-          submodules: true
-      - name: Generate and deploy website
-        uses: ronvanderheijden/hugo-rsync-deployment@master
-        env:
-          VPS_DEPLOY_KEY: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
-          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          VPS_DEPLOY_HOST: 192.168.1.254
-          VPS_DEPLOY_DEST: ${{ secrets.HUGO_SITE_LOCATION }}
+          hugo-version: "latest"
+          extended: true
+
+      - name: Build Hugo Site
+        run: hugo --minify
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/scp-action@v0.1.7
         with:
-          hugo-arguments: '--source=. --configDir=config/ -e production'
-          rsync-arguments: '--archive --compress --xattrs --dry-run'
+          host: ${{ secrets.HUGO_SITE_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "public/"
+          target: "${{ secrets.HUGO_SITE_LOCATION }}/"
+
+      - name: Restart Hugo Container (Optional)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HUGO_SITE_HOST }}
+          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          key: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
+          script: |
+            docker restart hugo
