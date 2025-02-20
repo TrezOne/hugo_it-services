@@ -1,0 +1,10 @@
+[submodule "poison"]
+        path = poison
+        url = https://github.com/lukeorth/poison.git
+[submodule "themes/poison"]
+        path = themes/poison
+        url = https://github.com/lukeorth/poison.git
+[submodule "themes/congo"]
+        path = themes/congo
+        url = https://github.com/jpanther/congo.git
+        branch = stable
