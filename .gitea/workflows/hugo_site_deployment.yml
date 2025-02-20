@@ -20,5 +20,5 @@ jobs:
           VPS_DEPLOY_HOST: 192.168.1.254
           VPS_DEPLOY_DEST: ${{ secrets.HUGO_SITE_LOCATION }}
         with:
-          hugo-arguments: '--minify'
+          hugo-arguments: '--source=/src/it-services --configDir=/src/it-services/config/ -e production'
           rsync-arguments: '--archive --compress --xattrs --dry-run'
