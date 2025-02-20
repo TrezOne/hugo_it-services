@@ -27,7 +27,7 @@ jobs:
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          key: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
+          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
           source: "public/"
           target: "${{ secrets.HUGO_SITE_LOCATION }}/"
 
@@ -36,6 +36,6 @@ jobs:
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          key: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
+          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
           script: |
             docker restart hugo
