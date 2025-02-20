@@ -1,0 +1,24 @@
+name: Hugo site deploy & publish
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-website:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Do a git checkout including submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Generate and deploy website
+        uses: ronvanderheijden/hugo-rsync-deployment@master
+        env:
+          VPS_DEPLOY_KEY: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
+          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          VPS_DEPLOY_HOST: 192.168.1.254
+          VPS_DEPLOY_DEST: ${{ secrets.HUGO_SITE_LOCATION }}
+        with:
+          hugo-arguments: '--minify'
+          rsync-arguments: '--archive --compress --xattrs --dry-run'
