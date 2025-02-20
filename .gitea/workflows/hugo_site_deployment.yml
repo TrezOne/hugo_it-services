@@ -26,8 +26,8 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          key: ${{ secrets.HUGO_DEPLOY_PRIVATE_KEY }}
           source: "public/"
           target: "${{ secrets.HUGO_SITE_LOCATION }}/"
 
