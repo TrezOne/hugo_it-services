@@ -84,7 +84,6 @@ jobs:
         env:
           HUGO_ACTION_COMMENT: true
           HUGO_STARTUP_WAIT: 15
-          # HUGO_EXCLUSIONS_LIST:
           HUGO_CONFIG: ./config
           HUGO_ROOT: ./
           HUGO_CONTENT_ROOT: ./content
