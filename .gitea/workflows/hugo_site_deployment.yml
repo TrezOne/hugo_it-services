@@ -133,6 +133,7 @@ jobs:
           notification_message: 'PR #${{ steps.pr_mesubrge.outputs.pr_index }} merged.'
   deploy-hugo-site:
     name: Build and Deploy to Server
+    needs: [hugo-sanity-check, pr-merge]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
