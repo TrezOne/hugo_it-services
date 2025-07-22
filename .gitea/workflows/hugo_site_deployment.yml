@@ -92,6 +92,7 @@ jobs:
       - name: Linkinator
         uses: JustinBeckwith/linkinator-action@v1.11.0
         with:
+          paths: .
           recurse: true
           markdown: true
       # - name: Broken Link check
