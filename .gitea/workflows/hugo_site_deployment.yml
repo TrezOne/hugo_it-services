@@ -104,14 +104,14 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo'
           notification_message: 'Broken link inspection done... 🔍'
-      - run: echo "${{ secrets.VPS_DEPLOY_KEY }}"
       - name: Setup rsync
-        id: setup-rsync
+        id: rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh-key: ${{ secrets.VPS_DEPLOY_KEY }}
       - name: Verifying key path
-        run: echo "SSK KEY PATH ${{ steps.setup-rsync.outputs.ssh_key_path }}"
+        run: |
+          echo "SSK KEY PATH: ${{ steps.rsync.outputs.ssh_key_path }}"
       - name: Testing rsync
         env:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
