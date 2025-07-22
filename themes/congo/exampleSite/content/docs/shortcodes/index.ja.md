@@ -153,7 +153,7 @@ Congoは、標準的なMarkdown構文を使用した場合の画像について�
 ![抽象的な紫色のアートワーク](abstract.jpg "Photo by [Jr Korpa](https://unsplash.com/@jrkorpa) on [Unsplash](https://unsplash.com/)")
 ```
 
-{{< figure src="abstract.jpg" alt="抽象的な紫色のアートワーク" caption="Photo by [Jr Korpa](https://unsplash.com/@jrkorpa) on [Unsplash](https://unsplash.com/)" >}}
+{{< congo-figure src="abstract.jpg" alt="抽象的な紫色のアートワーク" caption="Photo by [Jr Korpa](https://unsplash.com/@jrkorpa) on [Unsplash](https://unsplash.com/)" >}}
 
 ## アイコン
 
