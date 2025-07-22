@@ -112,6 +112,7 @@ jobs:
       - name: Deploy key path
         id: deploy_key_path
         run: |
+          echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}"
           deploy_key_path=$(echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}")
           echo "dkp=$deploy_key_path" >> $GITHUB_OUTPUT
       - name: Testing rsync
