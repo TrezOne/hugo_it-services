@@ -93,14 +93,10 @@ jobs:
         uses: JustinBeckwith/linkinator-action@v1.11.0
         with:
           paths: .
+          serverRoot: ./
+          format: json
           recurse: true
           markdown: true
-      # - name: Broken Link check
-      #   uses: BoundfoxStudios/action-hugo-link-check@v2
-      #   with:
-      #     hugo-root: ./
-      #     hugo-content-dir: ./content
-      #     hugo-config: ./config/
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -157,35 +153,34 @@ jobs:
         with:
           hugo-version: "latest"
           extended: true
-      - name: Generate & deploy site
-        run: |
-          hugo version
-          hugo --minify
-          hugo --source .
-          ls -al
-
-      # - name: Generate and deploy website
-      #   uses: ronvanderheijden/hugo-rsync-deployment@master
-      #   env:
-      #     VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
-      #     VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-      #     VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-      #     VPS_DEPLOY_DEST: /home/charish/.docker/config/appdata/hugo
-      #   with:
-      #     hugo-arguments: '--minify --source .'
-      #     rsync-arguments: '--archive --dry-run --compress --xattrs --delete'
-      # - name: Restart Hugo Container (Optional)
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.HUGO_SITE_HOST }}
-      #     username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-      #     password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
-      #     script: |
-      #       docker restart hugo
-      # - name: Gotify Notification
-      #   uses: eikendev/gotify-action@master
-      #   with:
-      #     gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-      #     gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-      #     notification_title: 'GITEA: Hugo'
-      #     notification_message: 'Hugo deployment successful!'
+      # - name: Generate & deploy site
+      #   run: |
+      #     hugo version
+      #     hugo --minify
+      #     hugo --source .
+      #     ls -al
+      - name: Generate and deploy website
+        uses: ronvanderheijden/hugo-rsync-deployment@master
+        env:
+          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
+          VPS_DEPLOY_DEST: /home/charish/.docker/config/appdata/hugo
+        with:
+          hugo-arguments: '--minify --source .'
+          rsync-arguments: '--archive --compress --xattrs --delete'
+      - name: Restart Hugo Container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HUGO_SITE_HOST }}
+          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+          script: |
+            docker restart hugo
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Hugo deployment successful!'
