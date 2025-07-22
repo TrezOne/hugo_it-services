@@ -158,11 +158,6 @@ jobs:
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
-      - name: Retrieve private key path for rsync
-        id: deploy_key_path
-        run: |
-          deploy_key_path=$(echo ${{ steps.setup_rsync.outputs.ssh_key_path }})
-          echo "dkp=$deploy_key_path" >> $GITHUB_OUTPUT
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -175,7 +170,7 @@ jobs:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.dkp }}
+          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.ssh_key_path }}
         run: |
           echo "${VPS_DEPLOY_KEY}"
           hugo version
