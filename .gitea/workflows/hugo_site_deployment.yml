@@ -165,11 +165,12 @@ jobs:
           notification_title: 'GITEA: Hugo'
           notification_message: 'Starting Hugo deployment... 🤞🏽'
       - name: Stopping Hugo Container
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+          key: ${{ secrets.VPS_DEPLOY_KEY }}
           script: |
             docker version
       - name: Generate Hugo Site & Deploy for Docker
@@ -182,11 +183,12 @@ jobs:
           hugo --minify --source .
           rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Start Hugo Container
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+          key: ${{ secrets.VPS_DEPLOY_KEY }}
           script: |
             docker container restart hugo
       - name: Gotify Notification
