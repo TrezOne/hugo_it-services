@@ -154,9 +154,11 @@ jobs:
           hugo-version: "latest"
           extended: true
       - name: Setup rsync
+        id: setup-rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh-key: ${{ secrets.VPS_DEPLOY_KEY }}
+      - run: echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}"
       - name: Testing rsync
         env:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
