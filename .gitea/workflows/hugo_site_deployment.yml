@@ -108,7 +108,7 @@ jobs:
         id: rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
-          ssh-key: ${{ secrets.VPS_DEPLOY_KEY }}
+          ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
       - name: Verifying key path
         run: |
           echo "SSK KEY PATH: ${{ steps.rsync.outputs.ssh_key_path }}"
