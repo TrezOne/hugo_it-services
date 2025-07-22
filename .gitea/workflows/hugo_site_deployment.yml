@@ -155,6 +155,8 @@ jobs:
           extended: true
       - name: Setup rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
+        with:
+          ssh-key: ${{ secrets.VPS_DEPLOY_KEY }}
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -169,12 +171,9 @@ jobs:
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
         run: |
-          echo ${{ secrets.VPS_DEPLOY_KEY }} > id_rsa_deploy
-          chmod 600 id_rsa_deploy
           hugo version
           hugo --minify --source .
-          rsync --progress -avz -e 'ssh -i id_rsa_deploy -o StrictHostKeyChecking=no' \
-            ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync --progress -avz ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Start Hugo Container
         uses: appleboy/ssh-action@v1.0.3
         with:
