@@ -105,22 +105,45 @@ jobs:
           notification_title: 'GITEA: Hugo'
           notification_message: 'Broken link inspection done... 🔍'
       - name: Setup rsync
-        id: rsync
+        id: setup_rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
-      - name: Verifying key path
-        run: |
-          echo "SSK KEY PATH: ${{ steps.rsync.outputs.ssh_key_path }}"
       - name: Testing rsync
         env:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: |
-            ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.ssh_key_path }}
         run: |
-          rsync -e 'ssh -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync -e 'ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Starting Hugo deployment... 🤞🏽'
+      - name: Generate Hugo Site & Deploy for Docker
+        env:
+          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
+          VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
+          VPS_DEPLOY_KEY: |
+            $$ {{ secrets.VPS_DEPLOY_KEY }}
+        run: |
+          hugo version
+          hugo --minify --source .
+          rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+      - name: Restart Hugo Container
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HUGO_SITE_HOST }}
+          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+          key: ${{ secrets.VPS_DEPLOY_KEY }}
+          script: |
+            docker container restart hugo
   # pr-merge:
   #   name: PR Merge
   #   needs: [hugo-sanity-check]
@@ -170,37 +193,52 @@ jobs:
   #       with:
   #         hugo-version: "latest"
   #         extended: true
-  #     - name: Gotify Notification
-  #       uses: eikendev/gotify-action@master
-  #       with:
-  #         gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-  #         gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-  #         notification_title: 'GITEA: Hugo'
-  #         notification_message: 'Starting Hugo deployment... 🤞🏽'
-  #     - name: Generate Hugo Site & Deploy for Docker
-  #       env:
-  #         VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-  #         VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-  #         VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-  #         VPS_DEPLOY_KEY: |
-  #           $$ {{ secrets.VPS_DEPLOY_KEY }}
-  #       run: |
-  #         hugo version
-  #         hugo --minify --source .
-  #         rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
-  #     - name: Restart Hugo Container
-  #       uses: appleboy/ssh-action@v1.2.2
-  #       with:
-  #         host: ${{ secrets.HUGO_SITE_HOST }}
-  #         username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-  #         password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
-  #         key: ${{ secrets.VPS_DEPLOY_KEY }}
-  #         script: |
-  #           docker container restart hugo
-  #     - name: Gotify Notification
-  #       uses: eikendev/gotify-action@master
-  #       with:
-  #         gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-  #         gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-  #         notification_title: 'GITEA: Hugo'
-  #         notification_message: 'Hugo deployment successful!'
+      # - name: Setup rsync
+      #   id: setup_rsync
+      #   uses: GuillaumeFalourd/setup-rsync@v1.2
+      #   with:
+      #     ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
+      # - run: echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}"
+      # - name: Testing rsync
+      #   env:
+      #     VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+      #     VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
+      #     VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
+      #     VPS_DEPLOY_KEY: |
+      #       ${{ secrets.VPS_DEPLOY_KEY }}
+      #   run: |
+      #     rsync -e 'ssh -i ${{ steps.setup_rsync.outputs.ssh_key_path }} -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+      # - name: Gotify Notification
+      #   uses: eikendev/gotify-action@master
+      #   with:
+      #     gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+      #     gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+      #     notification_title: 'GITEA: Hugo'
+      #     notification_message: 'Starting Hugo deployment... 🤞🏽'
+      # - name: Generate Hugo Site & Deploy for Docker
+      #   env:
+      #     VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+      #     VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
+      #     VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
+      #     VPS_DEPLOY_KEY: |
+      #       $$ {{ secrets.VPS_DEPLOY_KEY }}
+      #   run: |
+      #     hugo version
+      #     hugo --minify --source .
+      #     rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+      # - name: Restart Hugo Container
+      #   uses: appleboy/ssh-action@v1.2.2
+      #   with:
+      #     host: ${{ secrets.HUGO_SITE_HOST }}
+      #     username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+      #     password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+      #     key: ${{ secrets.VPS_DEPLOY_KEY }}
+      #     script: |
+      #       docker container restart hugo
+      # - name: Gotify Notification
+      #   uses: eikendev/gotify-action@master
+      #   with:
+      #     gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+      #     gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+      #     notification_title: 'GITEA: Hugo'
+      #     notification_message: 'Hugo deployment successful!'
