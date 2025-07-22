@@ -162,7 +162,8 @@ jobs:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_KEY: |
+            ${{ secrets.VPS_DEPLOY_KEY }}
         run: |
           rsync -e 'ssh -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Gotify Notification
