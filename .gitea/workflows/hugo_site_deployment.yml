@@ -181,7 +181,7 @@ jobs:
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
           script: |
-            docker container start hugo
+            docker container restart hugo
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
