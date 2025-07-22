@@ -179,10 +179,10 @@ jobs:
       - name: Restart Hugo Container
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.HUGO_SITE_HOST }}
+          host: 192.168.1.254
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
-          key: ${{ secrets.VPS_DEPLOY_KEY }}
+          key_path: ${{ steps.setup_rsync.outputs.ssh_key_path }}
           script: |
             docker container restart hugo
       - name: Gotify Notification
