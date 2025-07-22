@@ -153,22 +153,21 @@ jobs:
         with:
           hugo-version: "latest"
           extended: true
-      # - name: Generate & deploy site
-      #   run: |
-      #     hugo version
-      #     hugo --minify
-      #     hugo --source .
-      #     ls -al
-      - name: Generate and deploy website
-        uses: ronvanderheijden/hugo-rsync-deployment@master
+      - name: Generate Hugo Site & Deploy for Docker
         env:
           VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-          VPS_DEPLOY_DEST: /home/charish/.docker/config/appdata/hugo
-        with:
-          hugo-arguments: '--minify --source .'
-          rsync-arguments: '--archive --compress --xattrs --delete'
+          VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
+        run: |
+          mkdir -p ${HOME}/.ssh
+          echo  "${{ secrets.VPS_DEPLOY_KEY }}" > ${HOME}/.ssh/id_rsa_deploy
+          chmod 600 ${HOME}/.ssh/id_rsa_deploy
+          hugo version
+          hugo --minify --source .
+          rsync --progress -avz -e 'ssh -i ${HOME}/.ssh/id_rsa_deploy -o StrictHostKeyChecking=no' \
+            ./public \
+            ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Restart Hugo Container
         uses: appleboy/ssh-action@v1.0.3
         with:
