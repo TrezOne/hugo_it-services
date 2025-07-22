@@ -89,12 +89,17 @@ jobs:
         run: |
           hugo env
           hugo version
-      - name: Broken Link check
-        uses: BoundfoxStudios/action-hugo-link-check@v2
+      - name: Linkinator
+        uses: JustinBeckwith/linkinator-action@v1.11.0
         with:
-          hugo-root: ./
-          hugo-content-dir: ./content
-          hugo-config: ./config/
+          recurse: true
+          markdown: true
+      # - name: Broken Link check
+      #   uses: BoundfoxStudios/action-hugo-link-check@v2
+      #   with:
+      #     hugo-root: ./
+      #     hugo-content-dir: ./content
+      #     hugo-config: ./config/
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
