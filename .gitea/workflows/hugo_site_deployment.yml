@@ -173,7 +173,7 @@ jobs:
         run: |
           hugo version
           hugo --minify --source .
-          rsync --progress -avz ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Start Hugo Container
         uses: appleboy/ssh-action@v1.0.3
         with:
