@@ -104,25 +104,65 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo'
           notification_message: 'Broken link inspection done... 🔍'
+  pr-merge:
+    name: PR Merge
+    needs: [hugo-sanity-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache tea CLI
+        id: cache-tea
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
+          key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
+      - name: Install tea
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
+          name: tea
+          version: ${{ env.TEA_VERSION }}
+      - name: PR Merge
+        id: pr_merge
+        run: |
+          tea login add --name gitea-rinoa --url ${{ secrets.RINOA_GITEA_URL }} --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
+          tea login default gitea-rinoa
+          echo "Merging PR..."
+          pr_index=$(tea pr ls --repo ${{ github.repository }} --state open --fields index,title,head,state --output csv | egrep ${{ github.ref_name }} | awk -F"," '{print $1}' | sed -e 's|"||g')
+          tea pr m --repo ${{ github.repository }} --title "Auto Merge of PR ${pr_index} - ${{ github.ref_name }}" --message "Merged by ${{ github.actor }}" ${pr_index}
+          echo "pr_index=${pr_index}" >> $GITHUB_OUTPUT
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Merge Successful'
+          notification_message: 'PR #${{ steps.pr_mesubrge.outputs.pr_index }} merged.'
+  deploy-hugo-site:
+    name: Build and Deploy to Server
+    needs: [hugo-sanity-check, pr-merge]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "latest"
+          extended: true
       - name: Setup rsync
         id: setup_rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
-      - name: Deploy key path
+      - name: Retrieve private key path for rsync
         id: deploy_key_path
         run: |
-          echo "SSK KEY PATH: ${{ steps.setup_rsync.outputs.ssh_key_path }}"
           deploy_key_path=$(echo ${{ steps.setup_rsync.outputs.ssh_key_path }})
           echo "dkp=$deploy_key_path" >> $GITHUB_OUTPUT
-      - name: Testing rsync
-        env:
-          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-          VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: ${{ steps.deploy_key_path.outputs.dkp }}
-        run: |
-          rsync -e "ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no" -avz --progress --dry-run README.md ${VPS_DEPLOY_USER}@192.168.1.254:${VPS_DEPLOY_DEST}
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -135,12 +175,12 @@ jobs:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: |
-            $$ {{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.dkp }}
         run: |
+          echo "${VPS_DEPLOY_KEY}"
           hugo version
           hugo --minify --source .
-          rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync -e "ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no" -avz --progress ./public ${VPS_DEPLOY_USER}@192.168.1.254:${VPS_DEPLOY_DEST}
       - name: Restart Hugo Container
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -150,101 +190,10 @@ jobs:
           key: ${{ secrets.VPS_DEPLOY_KEY }}
           script: |
             docker container restart hugo
-  # pr-merge:
-  #   name: PR Merge
-  #   needs: [hugo-sanity-check]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Cache tea CLI
-  #       id: cache-tea
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
-  #         key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
-  #     - name: Install tea
-  #       uses: supplypike/setup-bin@v4
-  #       with:
-  #         uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
-  #         name: tea
-  #         version: ${{ env.TEA_VERSION }}
-  #     - name: PR Merge
-  #       id: pr_merge
-  #       run: |
-  #         tea login add --name gitea-rinoa --url ${{ secrets.RINOA_GITEA_URL }} --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
-  #         tea login default gitea-rinoa
-  #         echo "Merging PR..."
-  #         pr_index=$(tea pr ls --repo ${{ github.repository }} --state open --fields index,title,head,state --output csv | egrep ${{ github.ref_name }} | awk -F"," '{print $1}' | sed -e 's|"||g')
-  #         tea pr m --repo ${{ github.repository }} --title "Auto Merge of PR ${pr_index} - ${{ github.ref_name }}" --message "Merged by ${{ github.actor }}" ${pr_index}
-  #         echo "pr_index=${pr_index}" >> $GITHUB_OUTPUT
-  #     - name: Gotify Notification
-  #       uses: eikendev/gotify-action@master
-  #       with:
-  #         gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-  #         gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-  #         notification_title: 'GITEA: PR Merge Successful'
-  #         notification_message: 'PR #${{ steps.pr_mesubrge.outputs.pr_index }} merged.'
-  # deploy-hugo-site:
-  #   name: Build and Deploy to Server
-  #   needs: [hugo-sanity-check, pr-merge]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
-  #     - name: Setup Hugo
-  #       uses: peaceiris/actions-hugo@v3
-  #       with:
-  #         hugo-version: "latest"
-  #         extended: true
-      # - name: Setup rsync
-      #   id: setup_rsync
-      #   uses: GuillaumeFalourd/setup-rsync@v1.2
-      #   with:
-      #     ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
-      # - run: echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}"
-      # - name: Testing rsync
-      #   env:
-      #     VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-      #     VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-      #     VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-      #     VPS_DEPLOY_KEY: |
-      #       ${{ secrets.VPS_DEPLOY_KEY }}
-      #   run: |
-      #     rsync -e 'ssh -i ${{ steps.setup_rsync.outputs.ssh_key_path }} -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
-      # - name: Gotify Notification
-      #   uses: eikendev/gotify-action@master
-      #   with:
-      #     gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-      #     gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-      #     notification_title: 'GITEA: Hugo'
-      #     notification_message: 'Starting Hugo deployment... 🤞🏽'
-      # - name: Generate Hugo Site & Deploy for Docker
-      #   env:
-      #     VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-      #     VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-      #     VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-      #     VPS_DEPLOY_KEY: |
-      #       $$ {{ secrets.VPS_DEPLOY_KEY }}
-      #   run: |
-      #     hugo version
-      #     hugo --minify --source .
-      #     rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
-      # - name: Restart Hugo Container
-      #   uses: appleboy/ssh-action@v1.2.2
-      #   with:
-      #     host: ${{ secrets.HUGO_SITE_HOST }}
-      #     username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-      #     password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
-      #     key: ${{ secrets.VPS_DEPLOY_KEY }}
-      #     script: |
-      #       docker container restart hugo
-      # - name: Gotify Notification
-      #   uses: eikendev/gotify-action@master
-      #   with:
-      #     gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
-      #     gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
-      #     notification_title: 'GITEA: Hugo'
-      #     notification_message: 'Hugo deployment successful!'
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Hugo deployment successful!'
