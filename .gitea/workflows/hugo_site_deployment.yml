@@ -153,6 +153,8 @@ jobs:
         with:
           hugo-version: "latest"
           extended: true
+      - name: Setup rsync
+        uses: GuillaumeFalourd/setup-rsync@v1.2
       - name: Generate Hugo Site & Deploy for Docker
         env:
           VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
