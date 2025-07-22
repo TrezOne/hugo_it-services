@@ -1,36 +1,171 @@
 name: Deploy Hugo Site
-
+env:
+  FLARECTL_VERSION: '0.115.0'
+  HC_VAULT_VERSION: '1.20.0'
+  TEA_VERSION: '0.10.1'
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
-
+    branches-ignore:
+      - 'main'
+    paths:
+      - '**.md'
+      - '**.toml'
+      - '**.html'
+      - '**.yml'
+      - '**.json'
 jobs:
+  check-and-create-pr:
+    if: github.ref != 'refs/heads/main'
+    name: Check and Create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Cache tea CLI
+        id: cache-tea
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
+          key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
+      - name: Install tea
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
+          name: tea
+          version: ${{ env.TEA_VERSION }}
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Check'
+          notification_message: 'Checking for existing PR... 🔍'
+      - name: Check if open PR exists
+        id: check-opened-pr-step
+        continue-on-error: true
+        run: |
+          tea login add --name gitea-rinoa --url "${{ secrets.RINOA_GITEA_URL }}" --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
+          pr_exists=$(tea pr list --repo ${{ github.repository }} --state open fields-- index,title,head | egrep '\[HUGO\].*${{ github.ref_name }}' | tail -1 | wc -l)
+          echo "exists=$pr_exists" >> $GITHUB_OUTPUT
+      - name: Create PR
+        if: ${{ steps.check-opened-pr-step.outputs.exists == '0' }}
+        run: |
+          tea login default gitea-rinoa
+          pr_index_old=$(tea pr ls --repo ${{ github.repository }} --state all --fields index,title,head --output csv | sed -e 's|"||g' | egrep '^[0-9]' | head -1 | awk -F"," '{print $1}')
+          pr_index_new=$(expr ${pr_index_old} + 1)
+          tea pr c -r ${{ github.repository }} -t "[HUGO] Automated PR for ${{ github.ref_name }} - #${pr_index_new}" -d "Automatically created PR for branch: ${{ github.ref_name }}" -a ${{ github.actor }} -L "Docker Compose"
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Check'
+          notification_message: 'PR Created 🎟️'
+  hugo-sanity-check:
+    name: Hugo Sanity Check
+    needs: [check-and-create-pr]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Starting link inspectionn... 🔍'
+      - name: Install Hugo
+        uses: peaceiris/actions-hugo@v3.0.0
+        with:
+          hugo-version: 'latest'
+          # extended: true
+      - name: Verify Hugo install
+        run: |
+          hugo env
+          hugo version
+      - name: Linkinator
+        uses: JustinBeckwith/linkinator-action@v1.11.0
+        with:
+          recurse: true
+          markdown: true
+      # - name: Broken Link check
+      #   uses: BoundfoxStudios/action-hugo-link-check@v2
+      #   with:
+      #     hugo-root: ./
+      #     hugo-content-dir: ./content
+      #     hugo-config: ./config/
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Broken link inspection done... 🔍'
+  pr-merge:
+    name: PR Merge
+    needs: [hugo-sanity-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache tea CLI
+        id: cache-tea
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
+          key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
+      - name: Install tea
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
+          name: tea
+          version: ${{ env.TEA_VERSION }}
+      - name: PR Merge
+        id: pr_merge
+        run: |
+          tea login add --name gitea-rinoa --url ${{ secrets.RINOA_GITEA_URL }} --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
+          tea login default gitea-rinoa
+          echo "Merging PR..."
+          pr_index=$(tea pr ls --repo ${{ github.repository }} --state open --fields index,title,head,state --output csv | egrep ${{ github.ref_name }} | awk -F"," '{print $1}' | sed -e 's|"||g')
+          tea pr m --repo ${{ github.repository }} --title "Auto Merge of PR ${pr_index} - ${{ github.ref_name }}" --message "Merged by ${{ github.actor }}" ${pr_index}
+          echo "pr_index=${pr_index}" >> $GITHUB_OUTPUT
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Merge Successful'
+          notification_message: 'PR #${{ steps.pr_mesubrge.outputs.pr_index }} merged.'
   deploy-hugo-site:
     name: Build and Deploy to Server
+    needs: [hugo-sanity-check, pr-merge]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+        with:
+          submodules: true
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: "latest"
           extended: true
-
-      - name: Build Hugo Site
-        run: hugo --minify
-
-      - name: Deploy to Server via SSH
-        uses: appleboy/scp-action@v0.1.7
+      - name: Generate and deploy website
+        uses: ronvanderheijden/hugo-rsync-deployment@master
+        env:
+          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
+          VPS_DEPLOY_DEST: /home/charish/.docker/config/appdata/hugo
         with:
-          host: ${{ secrets.HUGO_SITE_HOST }}
-          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
-          source: "public/"
-          target: "${{ secrets.HUGO_SITE_LOCATION }}/"
-
+          hugo-arguments: '--minify'
+          rsync-arguments: '--archive --dry-run --compress --xattrs --delete'
       - name: Restart Hugo Container (Optional)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -39,3 +174,10 @@ jobs:
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
           script: |
             docker restart hugo
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Hugo deployment successful!'
