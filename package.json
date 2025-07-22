@@ -1,0 +1,10 @@
+{
+  "name": "hugo-it-services",
+  "private": true,
+  "hugo-bin": {
+    "buildTags": "extended"
+  },
+    "devDependencies": {
+      "hugo-bin": "0.148.0"
+  }
+}
