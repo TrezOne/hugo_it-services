@@ -104,6 +104,7 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo'
           notification_message: 'Broken link inspection done... 🔍'
+      - run: echo "${{ secrets.VPS_DEPLOY_KEY }}"
       - name: Setup rsync
         id: setup-rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
