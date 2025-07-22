@@ -79,15 +79,12 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo'
           notification_message: 'Starting link inspectionn... 🔍'
-      - name: Hugo Broken Link Check
-        uses: marccampbell/hugo-linkcheck-action@v0.1.3
-        env:
-          HUGO_ACTION_COMMENT: true
-          HUGO_STARTUP_WAIT: 15
-          HUGO_CONFIG: ./config
-          HUGO_ROOT: ./
-          HUGO_CONTENT_ROOT: ./content
-          # HUGO_FINAL_URL:
+      - name: Broken Link check
+        uses: BoundfoxStudios/action-hugo-link-check@v2
+        with:
+          hugo-root: ./
+          hugo-content-dir: ./content
+          hugo-config: ./config/
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
