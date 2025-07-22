@@ -162,12 +162,12 @@ jobs:
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
         run: |
-          mkdir -p ${HOME}/.ssh
-          echo  "${{ secrets.VPS_DEPLOY_KEY }}" > ${HOME}/.ssh/id_rsa_deploy
-          chmod 600 ${HOME}/.ssh/id_rsa_deploy
+          mkdir .ssh
+          echo "${{ secrets.VPS_DEPLOY_KEY }}" > .ssh/id_rsa_deploy
+          chmod 600 .ssh/id_rsa_deploy
           hugo version
           hugo --minify --source .
-          rsync --progress -avz -e 'ssh -i ${HOME}/.ssh/id_rsa_deploy -o StrictHostKeyChecking=no' \
+          rsync --progress -avz -e 'ssh -i .ssh/id_rsa_deploy -o StrictHostKeyChecking=no' \
             ./public \
             ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Restart Hugo Container
