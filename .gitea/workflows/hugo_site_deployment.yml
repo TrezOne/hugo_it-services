@@ -165,7 +165,7 @@ jobs:
           VPS_DEPLOY_KEY: |
             ${{ secrets.VPS_DEPLOY_KEY }}
         run: |
-          rsync -e 'ssh -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync -e 'ssh -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
