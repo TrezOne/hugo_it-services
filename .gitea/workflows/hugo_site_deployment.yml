@@ -154,22 +154,15 @@ jobs:
           hugo-version: "latest"
           extended: true
       - name: Setup rsync
-        id: setup-rsync
+        id: setup_rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
-          ssh-key: |
-            ${{ secrets.VPS_DEPLOY_KEY }}
-      - name: Verifying key path
-        run: echo "SSK KEY PATH ${{ steps.setup-rsync.outputs.ssh_key_path }}"
-      - name: Testing rsync
-        env:
-          VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
-          VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
-          VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: |
-            ${{ secrets.VPS_DEPLOY_KEY }}
+          ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
+      - name: Retrieve private key path for rsync
+        id: deploy_key_path
         run: |
-          rsync -e 'ssh -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          deploy_key_path=$(echo ${{ steps.setup_rsync.outputs.ssh_key_path }})
+          echo "dkp=$deploy_key_path" >> $GITHUB_OUTPUT
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -182,12 +175,12 @@ jobs:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: |
-            $$ {{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.dkp }}
         run: |
+          echo "${VPS_DEPLOY_KEY}"
           hugo version
           hugo --minify --source .
-          rsync --progress -avz -e 'ssh -o StrictHostKeyChecking=no' ./public ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
+          rsync -e "ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no" -avz --progress ./public ${VPS_DEPLOY_USER}@192.168.1.254:${VPS_DEPLOY_DEST}
       - name: Restart Hugo Container
         uses: appleboy/ssh-action@v1.2.2
         with:
