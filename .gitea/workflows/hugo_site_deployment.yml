@@ -97,6 +97,7 @@ jobs:
           format: json
           recurse: true
           markdown: true
+          verbosity: error
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
