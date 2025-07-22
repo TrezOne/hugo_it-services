@@ -109,12 +109,17 @@ jobs:
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
+      - name: Deploy key path
+        id: deploy_key_path
+        run: |
+          deploy_key_path=$(echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}")
+          echo "dkp=$deploy_key_path" >> $GITHUB_OUTPUT
       - name: Testing rsync
         env:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
-          VPS_DEPLOY_KEY: ${{ steps.setup_rsync.outputs.ssh_key_path }}
+          VPS_DEPLOY_KEY: ${{ steps.deploy_key_path.outputs.deploy_key_path }}
         run: |
           rsync -e 'ssh -i $VPS_DEPLOY_KEY -o StrictHostKeyChecking=no' -avz --progress --dry-run README.md charish@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
       - name: Gotify Notification
