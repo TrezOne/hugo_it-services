@@ -1,10 +1,22 @@
 {
-  "name": "hugo-it-services",
-  "private": true,
+  "name": "hugo_it-services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "hugo-bin": {
     "buildTags": "extended"
   },
-    "devDependencies": {
-      "hugo-bin": "0.148.0"
-  }
+  "devDependencies": {
+    "hugo-bin": "0.148.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.trez.wtf/Trez.One/hugo_it-services.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
