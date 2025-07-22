@@ -155,6 +155,21 @@ jobs:
           extended: true
       - name: Setup rsync
         uses: GuillaumeFalourd/setup-rsync@v1.2
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Hugo'
+          notification_message: 'Starting Hugo deployment... 🤞🏽'
+      - name: Stop Hugo Container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HUGO_SITE_HOST }}
+          username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
+          password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
+          script: |
+            docker container stop hugo
       - name: Generate Hugo Site & Deploy for Docker
         env:
           VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
@@ -162,22 +177,21 @@ jobs:
           VPS_DEPLOY_HOST: ${{ secrets.HUGO_SITE_HOST }}
           VPS_DEPLOY_DEST: ${{ secrets.VPS_DEPLOY_DEST }}
         run: |
-          mkdir .ssh
-          echo "${{ secrets.VPS_DEPLOY_KEY }}" > .ssh/id_rsa_deploy
-          chmod 600 .ssh/id_rsa_deploy
+          echo ${{ secrets.VPS_DEPLOY_KEY }} > id_rsa_deploy
+          chmod 600 id_rsa_deploy
           hugo version
           hugo --minify --source .
-          rsync --progress -avz -e 'ssh -i .ssh/id_rsa_deploy -o StrictHostKeyChecking=no' \
+          rsync --progress -avz -e 'ssh -i id_rsa_deploy -o StrictHostKeyChecking=no' \
             ./public \
             ${VPS_DEPLOY_USER}@${VPS_DEPLOY_HOST}:${VPS_DEPLOY_DEST}
-      - name: Restart Hugo Container
+      - name: Start Hugo Container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HUGO_SITE_HOST }}
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
           password: ${{ secrets.HUGO_DEPLOY_PASSWORD }}
           script: |
-            docker restart hugo
+            docker container start hugo
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
