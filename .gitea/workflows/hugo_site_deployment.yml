@@ -158,7 +158,8 @@ jobs:
         uses: GuillaumeFalourd/setup-rsync@v1.2
         with:
           ssh-key: ${{ secrets.VPS_DEPLOY_KEY }}
-      - run: echo "SSK KEY PATH ${{ steps.setup_rsync.outputs.ssh_key_path }}"
+      - name: Verifying key path
+        run: echo "SSK KEY PATH ${{ steps.setup-rsync.outputs.ssh_key_path }}"
       - name: Testing rsync
         env:
           VPS_DEPLOY_USER: ${{ secrets.HUGO_DEPLOY_USERNAME }}
