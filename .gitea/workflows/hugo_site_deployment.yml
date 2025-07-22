@@ -79,6 +79,15 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo'
           notification_message: 'Starting link inspectionn... 🔍'
+      - name: Install Hugo
+        uses: peaceiris/actions-hugo@v3.0.0
+        with:
+          hugo-version: '0.148.0'
+          extended: true
+      - name: Verify Hugo install
+        run: |
+          hugo env
+          hugo version
       - name: Broken Link check
         uses: BoundfoxStudios/action-hugo-link-check@v2
         with:
