@@ -16,7 +16,7 @@ Enterprise-level skills and offerings for SMBs (Small-to-Mid-sized Businesses)
 
 - Hardware (Desktops, Laptops, Tablets, Phones, Printers & More)
     - Installation/setup/activation
-    - Diagnotics & Troubleshooting
+    - Diagnostics & Troubleshooting
     - Replacements/upgrades (hard drives, memory/RAM, video cards, batteries & more)
     - Data backup & recovery
 - Software
@@ -30,7 +30,7 @@ Enterprise-level skills and offerings for SMBs (Small-to-Mid-sized Businesses)
     - Firewall installation, setup, & configuration
     - Smart home setup, configuration, and troubleshooting (Amazon Echo, Google Home, SmartThings, etc.)
 - Individuals & SMBs <sup>&#8225;</sup>
-    - Web development, implementation, & maitenance
+    - Web development, implementation, & maintenance
     - On-premise and cloud infrastructure, including but not limited to servers, virtualization, databases, CRM (Customer Relationship Management) and ERP (Enterprise Resource Planning) solutions, monitoring, automation,  & disaster recovery
     - Custom smart home solutions
     - Monthly retainer(s) available upon request

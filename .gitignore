@@ -26,3 +26,6 @@ Thumbs.db
 hugo.exe
 hugo.darwin
 hugo.linux
+
+# scripts
+*.sh
