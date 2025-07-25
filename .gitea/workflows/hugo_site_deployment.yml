@@ -10,7 +10,7 @@ on:
       - '**.md'
       - '**.toml'
       - '**.html'
-      - '**.yml'
+      - '*/**.yml'
       - '**.json'
 jobs:
   check-and-create-pr:
