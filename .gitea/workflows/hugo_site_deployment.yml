@@ -69,6 +69,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - run: |
           pwd
           ls -al
@@ -79,12 +81,16 @@ jobs:
           gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Hugo @ Rinoa'
           notification_message: 'Starting translations...'
+      - name: get changed files name
+        id: changed_files
+        run: |
+          echo "files=$(git diff --name-only HEAD^ HEAD | grep '\.md$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
       - name: GPT Translations (es,ko,zh-Hans)
         uses: 3ru/gpt-translate@v1.2.2
         with:
           token: ${{ secrets.BOT_GITEA_TOKEN }}
           apikey: ${{ secrets.OPENAI_API_KEY }}
-          inputFiles: content/en/*.md
+          inputFiles: ${{ steps.changed_files.outputs.files }}
           outputFiles: 'content/es/*.md content/ko/*.md content/zh-Hans/*.md'
           languages: Spanish Korean Chinese
       - name: Add/Commit README.md
