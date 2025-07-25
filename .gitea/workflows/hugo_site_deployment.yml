@@ -91,7 +91,7 @@ jobs:
           token: ${{ secrets.BOT_GITEA_TOKEN }}
           provider: 'openai'
           apikey: ${{ secrets.OPENAI_API_KEY }}
-          model: 'o4-mini'
+          model: 'ChatGPT-4o'
           inputFiles: ${{ steps.list_files.outputs.files }}
           outputFiles: 'content/es/*.md content/ko/*.md content/zh-Hans/*.md'
           languages: Spanish Korean Chinese
