@@ -2,10 +2,5 @@
   extended = true
   min = "0.87.0"
 
-[module]
-
-[[module.imports]]
-  path = "./themes/poison"
-
-[[module.imports]]
-  path = "./themes/congo"
+[[imports]]
+path = "github.com/jpanther/congo/v2"

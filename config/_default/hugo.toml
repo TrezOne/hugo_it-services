@@ -1,0 +1,56 @@
+# -- Site Configuration --
+# Refer to the theme docs for more details about each of these parameters.
+# https://jpanther.github.io/congo/docs/getting-started/
+
+# baseURL = "https://your_domain.com/"
+baseURL = "https://it-services.trez.wtf/"
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = true
+enableRobotsTXT = true
+pagerSize = 10
+summaryLength = 0
+sectionPagesMenu = 'main'
+
+[languages]
+  [languages.en]
+    languageName = "English"
+    weight = 1
+    contentDir = "content/en"
+
+  [languages.ko]
+    languageName = "한국어"
+    weight = 2
+    contentDir = "content/ko"
+
+  [languages.zh-Hans]
+    languageName = "中文"
+    weight = 3
+    contentDir = "content/zh-Hans"
+
+  [languages.es]
+    languageName = "Español"
+    weight = 4
+    contentDir = "content/es"
+
+[markup]
+  defaultMarkdownHandler = "goldmark"
+  [markup.goldmark.renderer]
+    unsafe = true
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[pagination]
+  pagerSize = 10
+
+[privacy]
+  [privacy.vimeo]
+    enableDNT = true
+  [privacy.x]
+    enableDNT = true
+  [privacy.youTube]
+    privacyEnhanced = true
+
+[services]
+  [services.x]
+    disableInlineCSS = true
