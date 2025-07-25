@@ -10,7 +10,7 @@ on:
       - '**.md'
       - '**.toml'
       - '**.html'
-      - '*/**.yml'
+      - '**.yml'
       - '**.json'
 jobs:
   check-and-create-pr:
@@ -65,12 +65,13 @@ jobs:
   hugo-translations:
     name: Hugo Translations
     runs-on: ubuntu-latest
+    needs: [check-and-create-pr]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       - run: |
           pwd
-          tree
+          ls -al
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
