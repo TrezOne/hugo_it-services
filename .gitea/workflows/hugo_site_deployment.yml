@@ -89,8 +89,8 @@ jobs:
         uses: 3ru/gpt-translate@v1.2.2
         with:
           token: ${{ secrets.BOT_GITEA_TOKEN }}
-          provider: 'anthropic'
-          apikey: ${{ secrets.ANTHROPIC_API_KEY }}
+          provider: 'mistral'
+          apikey: ${{ secrets.MISTRAL_API_KEY }}
           inputFiles: ${{ steps.list_files.outputs.files }}
           outputFiles: 'content/es/*.md content/ko/*.md content/zh-Hans/*.md'
           languages: Spanish Korean Chinese
