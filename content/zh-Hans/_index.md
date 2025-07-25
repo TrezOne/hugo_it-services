@@ -1,13 +1,12 @@
 ---
-标题：
-描述：""
-日期：2025-07-23T23:02:44.479Z
-预览：""
-草稿：false
-标签：[]
-分类：[]
+title:
+description: ""
+date: 2025-07-23T23:02:44.479Z
+preview: ""
+draft: false
+tags: []
+categories: []
 ---
-
 <br />
 <div style="font-size: 24pt; font-weight: bold">专业、娴熟的技术服务，以及——我们敢说——智慧</div>
 <br />
