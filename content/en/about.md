@@ -1,7 +1,6 @@
 ---
 title:
 draft: false
-# layout: "simple"
 ---
 
 <br />
@@ -23,3 +22,6 @@ Whether the problem is small like slow programs or gargantuan like failing criti
 <div style="font-size: 20pt; font-weight: bold" id="faq">Frequently Asked Questions</sup></div>
 term
 : definition -->
+
+
+**test**
