@@ -63,10 +63,13 @@ jobs:
           notification_title: 'GITEA: PR Check'
           notification_message: 'PR Created 🎟️'
   hugo-translations:
+    name: Hugo Translations
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - run: |
+          pwd ; ls -alh
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
