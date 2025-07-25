@@ -68,8 +68,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - run: |
-          pwd ; ls -alh
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
@@ -82,8 +80,8 @@ jobs:
         with:
           token: ${{ secrets.BOT_GITEA_TOKEN }}
           apikey: ${{ secrets.OPENAI_API_KEY }}
-          inputFiles: ./content/en/*.md
-          outputFiles: ./content/es/*.md ./content/ko/*.md ./content/zh-Hans/*.md
+          inputFiles: content/en/*.md
+          outputFiles: 'content/es/*.md content/ko/*.md content/zh-Hans/*.md'
           languages: Spanish Korean Chinese
       - name: Add/Commit README.md
         id: commit-translations
