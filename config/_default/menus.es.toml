@@ -12,26 +12,26 @@
 
 [[main]]
   identifier = "services"
-  name = "Services/Rates"
+  name = "Servicios/Tarifas"
   pageRef = '/'
   # url = "https://it-services.trez.wtf/#services"
   weight = 10
 
 [[main]]
-  name = "About"
+  name = "Acerca de"
   pageRef = "/about"
   # url = 'https://it-services.trez.wtf/about/'
   weight = 20
 
 [[main]]
-  name = "Support"
+  name = "Apoyo"
   url = "https://support.trez.wtf"
   weight = 30
   [main.params]
     target = "_blank"
 
 [[main]]
-  name = "Payments"
+  name = "Pagos"
   url = "https://biz.trez.wtf/client/login"
   weight = 40
   [main.params]
