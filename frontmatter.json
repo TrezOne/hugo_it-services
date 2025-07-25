@@ -11,14 +11,6 @@
     {
       "title": "archetypes",
       "path": "[[workspace]]/archetypes"
-    },
-    {
-      "title": "poison",
-      "path": "[[workspace]]/themes/poison"
-    },
-    {
-      "title": "congo",
-      "path": "[[workspace]]/themes/congo"
     }
   ],
   "frontMatter.git.enabled": true
