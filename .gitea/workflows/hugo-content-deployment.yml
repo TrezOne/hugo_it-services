@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 1
       - name: Cache tea CLI
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           submodules: true
       - name: Gotify Notification
@@ -78,7 +78,7 @@ jobs:
           notification_title: 'GITEA: Hugo'
           notification_message: 'Starting link inspectionn... 🔍'
       - name: Install Hugo
-        uses: peaceiris/actions-hugo@v3.0.0
+        uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3.0.0
         with:
           hugo-version: 'latest'
           # extended: true
@@ -87,7 +87,7 @@ jobs:
           hugo env
           hugo version
       - name: Linkinator
-        uses: JustinBeckwith/linkinator-action@v1.11.0
+        uses: JustinBeckwith/linkinator-action@3d5ba091319fa7b0ac14703761eebb7d100e6f6d # v1.11.0
         with:
           paths: .
           serverRoot: ./
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
       - name: Cache tea CLI
         id: cache-tea
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
@@ -143,17 +143,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           submodules: true
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+        uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3
         with:
           hugo-version: "latest"
           extended: true
       - name: Setup rsync
         id: setup_rsync
-        uses: GuillaumeFalourd/setup-rsync@v1.2
+        uses: GuillaumeFalourd/setup-rsync@c16d3c9077132c8ee28eb9de74edcb41c0e0e816 # v1.2
         with:
           ssh_key: ${{ secrets.VPS_DEPLOY_KEY }}
       - name: Gotify Notification
@@ -173,7 +173,7 @@ jobs:
           hugo --minify --source .
           rsync -e "ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no" -avz --progress ./public ${VPS_DEPLOY_USER}@192.168.1.254:${VPS_DEPLOY_DEST}
       - name: Restart Hugo Container
-        uses: appleboy/ssh-action@v1.2.2
+        uses: appleboy/ssh-action@2ead5e36573f08b82fbfce1504f1a4b05a647c6f # v1.2.2
         with:
           host: 192.168.1.254
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
