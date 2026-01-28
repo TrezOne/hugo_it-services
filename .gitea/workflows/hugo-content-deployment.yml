@@ -177,7 +177,7 @@ jobs:
           rsync -e "ssh -i ${VPS_DEPLOY_KEY} -o StrictHostKeyChecking=no" -avz --progress ./public ${VPS_DEPLOY_USER}@192.168.1.254:${VPS_DEPLOY_DEST}
 
       - name: Restart Hugo Container
-        uses: appleboy/ssh-action@823bd89e131d8d508129f9443cad5855e9ba96f0 # v1.2.4
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: 192.168.1.254
           username: ${{ secrets.HUGO_DEPLOY_USERNAME }}
