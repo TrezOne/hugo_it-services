@@ -46,7 +46,7 @@ jobs:
 
       - name: Add/Commit Translations
         id: commit-translations
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@998652d28d7702d095d40f52ae42982a80ae8c7d # v9.0.1
         with:
           message: "Adding translated content..."
           add: "./content/*"
